@@ -55,11 +55,13 @@ for row in range(rows):#跑過每個座標
 pixel_cat = agent.pixelcat()
 agent.send_chat(pixel_cat)
 
+towers = agent.get_all_towers(True)
+agent.send_chat(agent.get_devs(True))
 while True: #主遊戲
     remain_time = agent.get_remain_time()
     end = time.time()#紀錄現在時間
     dt = end - start
-    if(dt >= 3): #每3秒召喚一次 "票"寶寶
+    if(dt >= 1): #每1秒召喚一次 "票"寶寶
         agent.spawn_unit(api.EnemyType.GOOMBA)
         start = end
 
@@ -67,23 +69,24 @@ while True: #主遊戲
         agent.cast_spell(api.SpellType.DOUBLE_INCOME)
         agent.send_chat('兩倍錢>:)')
 
-    """以下邏輯解釋:75~86
+    """以下邏輯解釋:
     當錢大於400 且有效位置還有剩 :
         放置砲塔
         將座標及等級存入 placed_bomb 裡 (升級時會用到)
     猩猩邏輯一樣
     """
-    if agent.get_money(True) >= 400 and bomb_tower:
+
+    if agent.get_money(True) >= 400 and corner:
+        agent.place_tower(api.TowerType.DONKEY_KONG, '1', corner[0])
+        agent.send_chat('放置lv 1猩猩')
+        placed_gorilla.add((corner[0], '1'))
+        del corner[0]
+    elif agent.get_money(True) >= 400 and bomb_tower:
         agent.place_tower(api.TowerType.FORT, '1', bomb_tower[0])
         agent.send_chat('放置lv 1砲塔')
         placed_bomb.add((bomb_tower[0], '1'))
         del bomb_tower[0]
 
-    elif agent.get_money(True) >= 400 and corner:
-        agent.place_tower(api.TowerType.DONKEY_KONG, '1', corner[0])
-        agent.send_chat('放置lv 1猩猩')
-        placed_gorilla.add((corner[0], '1'))
-        del corner[0]
 
     """以下邏輯解釋:75~86
     當錢大於1200 且有效位置還有剩 :
@@ -94,17 +97,49 @@ while True: #主遊戲
     砲台邏輯一樣
     """
     #balance值:每個砲臺升一級，balance值加一，大於三時則會開始升級猩猩
-    if agent.get_money(True) >= 1200 and 3 >= balance and len(placed_gorilla) != 0:
+    to_delete = []
+
+    for tower in towers:
+        print(f'tower_level_a={tower.level_a}')
+        print(f'money={agent.get_money(True)}')
+        if tower.level_a == 1 and agent.get_money(True) >= 1200:
+            agent.place_tower(tower.type, '2a', tower.position)
+            agent.send_chat('放置lv 2a')
+            print('haha')
+            to_delete.append(tower)
+            towers.append(agent.get_tower(tower.position))
+        elif tower.level_b == 1 and agent.get_money(True) >= 1200:
+            agent.place_tower(tower.type, '2b', tower.position)
+            agent.send_chat('放置lv 2b')
+            to_delete.append(tower)
+            towers.append(agent.get_tower(tower.position))
+        elif tower.level_a == '2' and agent.get_money(True) >= 2800:
+            agent.place_tower(tower.type, '3a', tower.position)
+            agent.send_chat('放置lv 3a')
+            to_delete.append(tower)
+            towers.append(agent.get_tower(tower.position))
+        elif tower.level_b == '2' and agent.get_money(True) >= 2800:
+            agent.place_tower(tower.type, '3b', tower.position)
+            agent.send_chat('放置lv3b')
+            to_delete.append(tower)
+            towers.append(agent.get_tower(tower.position))
+        for tower in towers:
+            towers.remove(tower)
+"""
+    if agent.get_money(True) >= 1200 and 3 <= balance and len(placed_gorilla) != 0:
         temp = placed_gorilla.pop()
         if agent.get_money(True) >= 2800:
             agent.send_chat('放置lv 3猩猩')
             agent.place_tower(api.TowerType.DONKEY_KONG, '3a', temp[0])
+            agent.send_chat(towers)
             balance -= 1
         elif temp[1] == '1':
             agent.send_chat('放置lv 2猩猩')
             agent.place_tower(api.TowerType.DONKEY_KONG, '2a', temp[0])
+
             placed_gorilla.add((temp[0], '2'))
             balance -= 1
+
 
     elif agent.get_money(True) >= 1200 and len(placed_bomb) != 0:
         temp = placed_bomb.pop()
@@ -117,33 +152,4 @@ while True: #主遊戲
             agent.place_tower(api.TowerType.FORT, '2b', temp[0])
             placed_bomb.add((temp[0], '2'))
             balance += 1
-
-
-'''
-while True:
-    remain_time = agent.get_remain_time()
-    agent.send_chat('test')
-    # CAST DOUBLE INCOME
-    income_multiplier: int = 1
-    agent.cast_spell(api.SpellType.DOUBLE_INCOME)
-    income_multiplier = 2
-
-    # INCOME ENHANCEMENT
-    if agent.get_income(True) / income_multiplier < 150:
-        agent.spawn_unit(api.EnemyType.GOOMBA)
-    elif len(agent.get_all_towers(True)) > 20 and agent.get_income(True) / income_multiplier < 250:
-        agent.spawn_unit(api.EnemyType.GOOMBA)
-
-    # DEFENSE
-    terrain = agent.get_all_terrain()
-    for (row, data) in enumerate(terrain):
-        for (col, tile) in enumerate(data):
-            if tile == api.TerrainType.EMPTY:
-                agent.place_tower(api.TowerType.FIRE_MARIO, '1', api.Vector2(row, col))
-
-    # ATTACK
-    if agent.get_money(True) >= 3000:
-        agent.spawn_unit(api.EnemyType.KOOPA_JR)
-
-    # CHAT
-'''
+"""
