@@ -1,0 +1,11 @@
+# IDE stuff
+.vscode
+
+# python virtual environment
+.venv/
+
+# misc
+.DS_Store
+
+/export/
+__pycache__/
