@@ -304,7 +304,7 @@ class GameClient(GameClientBase):
 
         ## Example
         ```python
-        tower = agent.get_tower(Vector2(5, 10))  # 獲取 (5, 10) 位置的塔資訊
+        tower = agent.get_tower(True, Vector2(5, 10))  # 獲取 (5, 10) 位置的塔資訊
         print(tower)
         """
         raise NotImplementedError

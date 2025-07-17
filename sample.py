@@ -55,12 +55,12 @@ for row in range(rows):#跑過每個座標
 pixel_cat = agent.pixelcat()
 agent.send_chat(pixel_cat)
 
-towers = agent.get_all_towers(True)
 agent.send_chat(agent.get_devs(True))
 while True: #主遊戲
     remain_time = agent.get_remain_time()
     end = time.time()#紀錄現在時間
     dt = end - start
+    agent.send_chat(dt)
     if(dt >= 1): #每1秒召喚一次 "票"寶寶
         agent.spawn_unit(api.EnemyType.GOOMBA)
         start = end
@@ -98,7 +98,7 @@ while True: #主遊戲
     """
     #balance值:每個砲臺升一級，balance值加一，大於三時則會開始升級猩猩
     to_delete = []
-
+    towers = agent.get_all_towers(True)
     for tower in towers:
         print(f'tower_level_a={tower.level_a}')
         print(f'money={agent.get_money(True)}')
@@ -107,23 +107,20 @@ while True: #主遊戲
             agent.send_chat('放置lv 2a')
             print('haha')
             to_delete.append(tower)
-            towers.append(agent.get_tower(tower.position))
         elif tower.level_b == 1 and agent.get_money(True) >= 1200:
             agent.place_tower(tower.type, '2b', tower.position)
             agent.send_chat('放置lv 2b')
             to_delete.append(tower)
-            towers.append(agent.get_tower(tower.position))
         elif tower.level_a == '2' and agent.get_money(True) >= 2800:
             agent.place_tower(tower.type, '3a', tower.position)
             agent.send_chat('放置lv 3a')
             to_delete.append(tower)
-            towers.append(agent.get_tower(tower.position))
         elif tower.level_b == '2' and agent.get_money(True) >= 2800:
             agent.place_tower(tower.type, '3b', tower.position)
             agent.send_chat('放置lv3b')
             to_delete.append(tower)
-            towers.append(agent.get_tower(tower.position))
-        for tower in towers:
+        for tower in to_delete:
+            towers.append(agent.get_tower(True, tower.position))
             towers.remove(tower)
 """
     if agent.get_money(True) >= 1200 and 3 <= balance and len(placed_gorilla) != 0:
